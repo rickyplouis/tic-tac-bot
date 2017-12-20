@@ -3,13 +3,15 @@ import ReactDOM from 'react-dom';
 import Square from './square'
 import Row from './row'
 import './index.css';
-
+import GameController from './gameController'
 /** TODO
 1. Display the location for each move in the format (col, row) in the move history list.
 2. Bold the currently selected item in the move list.
 5. When someone wins, highlight the three squares that caused the win.
 */
 
+
+const ResetButton = (props) => <button onClick={props.onClick}>Reset The Game</button>
 
 class Board extends React.Component {
   renderSquare(i) {
@@ -50,7 +52,7 @@ class Game extends React.Component {
     super(props);
     this.state = {
       history: [{
-        squares: Array(9).fill(null),
+        squares: ['X', 'O', 'X', 'O', 'X', 'O', null, null, null],
         nextMove: 'X'
       }],
       nextMove: 'X',
@@ -69,11 +71,11 @@ class Game extends React.Component {
     return square === null
   }
 
-  handleClick(i) {
+  selectSquare(i) {
     const history = this.state.history;
     const currentState = history[history.length - 1];
     const squares = currentState.squares.slice();
-    if (calculateWinner(squares) || !this.squareIsEmpty(squares[i])) {
+    if (GameController.calculateWinner(squares) || !this.squareIsEmpty(squares[i])) {
       return;
     }
     let nextMove = this.state.nextMove === 'X' ? 'O' : 'X';
@@ -100,14 +102,10 @@ class Game extends React.Component {
     })
   }
 
-  renderResetButton(){
-    return <button onClick={(e) => this.resetGame()}>Reset The Game</button>
-  }
-
   render() {
     const history = this.state.history;
     const selectedState = history[this.state.stepNumber];
-    const isWinner = calculateWinner(selectedState.squares);
+    const isWinner = GameController.calculateWinner(selectedState.squares);
     const moves = history.map((step, move) => {
       const desc = move ?
         'Go to move #' + move :
@@ -124,14 +122,12 @@ class Game extends React.Component {
     return (
       <div className='game'>
         <div className='game-board'>
-          <Board
-            squares={selectedState.squares}
-            onClick={(i) => this.handleClick(i)}
+          <Board squares={selectedState.squares} onClick={(i) => this.selectSquare(i)}
           />
         </div>
         <div className='game-info'>
           <div>{status}</div>
-          <div>{this.renderResetButton()}</div>
+          <ResetButton onClick={() => this.resetGame()} />
           <ol>{moves}</ol>
         </div>
       </div>
@@ -139,28 +135,7 @@ class Game extends React.Component {
   }
 }
 
-
 ReactDOM.render(
   <Game />,
   document.getElementById('root')
 );
-
-function calculateWinner(squares) {
-  const winningCombos = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < winningCombos.length; i++) {
-    const [a, b, c] = winningCombos[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return true
-    }
-  }
-  return null;
-}
