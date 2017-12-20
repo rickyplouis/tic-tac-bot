@@ -18,7 +18,7 @@ class Board extends React.Component {
     return (
       <Square
         key={i}
-        value={this.props.squares[i]}
+        value={Number.isInteger(this.props.squares[i]) ? '' : this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
       />
     );
@@ -52,7 +52,7 @@ class Game extends React.Component {
     super(props);
     this.state = {
       history: [{
-        squares: ['X', 'O', 'X', 'O', 'X', 'O', null, null, null],
+        squares: ['X', 'O', 'X', 'O', 'X', 'O', 6, 7, 8],
         nextMove: 'X'
       }],
       nextMove: 'X',
@@ -67,15 +67,21 @@ class Game extends React.Component {
     });
   }
 
-  squareIsEmpty(square){
-    return square === null
+  testing(){
+    const selectedState = this.state.history[this.state.stepNumber].squares;
+    alert('Empty squares' + this.findEmptySquares(selectedState).join().toString())
+    console.log('findEmptySquares()', this.findEmptySquares(selectedState));
+  }
+
+  findEmptySquares(board=[]){
+    return board.filter( square => Number.isInteger(square))
   }
 
   selectSquare(i) {
     const history = this.state.history;
     const currentState = history[history.length - 1];
     const squares = currentState.squares.slice();
-    if (GameController.calculateWinner(squares) || !this.squareIsEmpty(squares[i])) {
+    if (GameController.calculateWinner(squares) || !squares[i] === null) {
       return;
     }
     let nextMove = this.state.nextMove === 'X' ? 'O' : 'X';
@@ -94,12 +100,12 @@ class Game extends React.Component {
   resetGame(){
     this.setState({
       history: [{
-        squares: Array(9).fill(null),
+        squares: Array(9).fill(0).map( (val, index) => index),
         nextMove: 'X'
       }],
       nextMove: 'X',
       stepNumber: 0,
-    })
+    }, () => console.log('board', this.state.history[0].squares) )
   }
 
   render() {
@@ -128,6 +134,7 @@ class Game extends React.Component {
         <div className='game-info'>
           <div>{status}</div>
           <ResetButton onClick={() => this.resetGame()} />
+          <button onClick={() => this.testing()}>Test</button>
           <ol>{moves}</ol>
         </div>
       </div>
